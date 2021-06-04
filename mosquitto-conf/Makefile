@@ -2,6 +2,8 @@
 CA="ca.crt"
 CAkey="ca.key"
 
+PWD=$(shell pwd)
+
 create_ca:
 	# http://www.steves-internet-guide.com/mosquitto-tls/
 	# IMPORTANT CA hostname can't be the same as any signed server or client
@@ -12,8 +14,13 @@ create_ca:
 
 SERVER_NAME="server"
 SERVER_DIR=${SERVER_NAME}
-SERVER_COMMONNAME="192.168.178.123"
-MQTT_TLS_PORT="8883"
+SERVER_COMMONNAME="192.168.178.120"
+MQTT_TLS_PORT="1883"
+
+# Get current ip address
+# DEVICE_NAME="wlo1"
+# ip address show ${DEVICE_NAME} | rg 'inet ' | awk '{print}' | sed 's/\/.*$//'
+
 
 
 create_server_key:
@@ -89,13 +96,13 @@ build_container:
 	${CONTAINER_TOOL} image pull eclipse-mosquitto:latest
 
 create_container:
-	${CONTAINER_TOOL} create --name mqtt -p ${SERVER_COMMONNAME}:${MQTT_TLS_PORT}:${MQTT_TLS_PORT} -v ./config:/mosquitto/config  -v ./log:/mosquitto/log eclipse-mosquitto
+	${CONTAINER_TOOL} create --name mqtt -p ${SERVER_COMMONNAME}:${MQTT_TLS_PORT}:${MQTT_TLS_PORT} -v ${PWD}/config:/mosquitto/config  -v ${PWD}/log:/mosquitto/log eclipse-mosquitto
 
 start_container:
 	${CONTAINER_TOOL} start mqtt
 
 run_container:
-	${CONTAINER_TOOL} run -d --name mqtt -p ${SERVER_COMMONNAME}:${MQTT_TLS_PORT}:${MQTT_TLS_PORT} -v ./config:/mosquitto/config  -v ./log:/mosquitto/log eclipse-mosquitto
+	${CONTAINER_TOOL} run -it --name mqtt -p ${SERVER_COMMONNAME}:${MQTT_TLS_PORT}:${MQTT_TLS_PORT} -v ${PWD}/config:/mosquitto/config  -v ${PWD}/log:/mosquitto/log docker.io/eclipse-mosquitto
 
 rm_container:
 	${CONTAINER_TOOL} container rm mqtt
